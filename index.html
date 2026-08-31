@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Morse Code Translator</title>
+<style>
+  :root {
+    --bg-main: #0b0f15;
+    --bg-panel: #141922;
+    --bg-toolbar: #1b212c;
+    --border-panel: #2b333f;
+    --accent: #3fb5ff;
+    --accent-soft: #7fd0ff;
+    --accent-strong: #00a2ff;
+    --text-main: #e5ecf7;
+    --text-dim: #8b94a3;
+    --btn-bg: #252c38;
+    --btn-bg-hover: #2f3745;
+    --btn-border: #3a424e;
+    --textarea-bg: #0f141c;
+    --textarea-border: #303846;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background: var(--bg-main);
+    color: var(--text-main);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .app-root {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    padding: 10px 14px;
+    gap: 10px;
+  }
+
+  .toolbar {
+    display: flex;
+    gap: 10px;
+    align-items: stretch;
+  }
+
+  .toolbar-box {
+    background: var(--bg-toolbar);
+    border-radius: 6px;
+    border: 1px solid var(--border-panel);
+    padding: 8px 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .toolbar-box.left {
+    flex: 1.4;
+    justify-content: space-between;
+  }
+
+  .toolbar-box.right {
+    flex: 0.9;
+    justify-content: space-between;
+  }
+
+  .toolbar-box-group {
+    display: flex;
+    align-items: center;
+	width: 100%;
+    gap: 23px;
+  }
+
+  .slider-row {
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--text-dim);
+	user-select: none;
+	width: 100%;
+  }
+
+  .slider-row label {
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+
+  .slider-row input[type="range"] {
+    flex: 1;
+    accent-color: var(--accent-strong);
+	background: #3fb5ff;
+  }
+
+  .slider-value {
+    min-width: 40px;
+	text-align: right;
+    color: var(--accent-soft);
+    font-size: 11px;
+	user-select: none;
+  }
+  
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 4px;
+    border-radius: 999px;
+    background: #1b222e;
+    outline: none;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 1px solid #0b1016;
+    box-shadow: 0 0 0 2px rgba(0,0,0,0.6);
+    cursor: pointer;
+  }
+
+  input[type="range"]::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 1px solid #0b1016;
+    box-shadow: 0 0 0 2px rgba(0,0,0,0.6);
+    cursor: pointer;
+  }
+
+  input[type="range"]::-moz-range-track {
+    height: 4px;
+    border-radius: 999px;
+    background: #3fb5ff;
+  }
+
+  .btn {
+    background: var(--btn-bg);
+    border: 1px solid var(--btn-border);
+    color: var(--text-main);
+    border-radius: 4px;
+    padding: 6px 10px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+	user-select: none;
+  }
+
+  .btn:hover {
+    background: var(--btn-bg-hover);
+  }
+
+  .btn-primary {
+    border-color: var(--accent-strong);
+    color: var(--accent-soft);
+  }
+
+  .btn-icon {
+    font-size: 13px;
+  }
+
+  .led-box {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid #3a424e;
+    background: #10141a;
+    min-width: 170px;
+  }
+
+  .led-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    background: #3a2a10;
+    box-shadow: inset 0 0 4px rgba(0,0,0,0.8);
+    transition: background 0.08s linear, box-shadow 0.08s linear;
+  }
+
+  .led-indicator.on {
+    background: #ff8c00;
+    box-shadow:
+      0 0 6px rgba(255,140,0,0.9),
+      0 0 14px rgba(255,140,0,0.7);
+  }
+
+  .led-labels {
+    display: flex;
+    flex-direction: column;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-dim);
+	user-select: none;
+  }
+
+  .led-labels span strong {
+    color: var(--accent-soft);
+  }
+
+  .main-panels {
+    flex: 1;
+    display: flex;
+    gap: 10px;
+    min-height: 0;
+  }
+
+  .panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-panel);
+    border-radius: 8px;
+    border: 1px solid var(--border-panel);
+    padding: 8px;
+    min-height: 0;
+  }
+
+  .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+	gap: 4px;
+  }
+
+  .panel-title {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--text-dim);
+	user-select: none;
+  }
+
+  .panel-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  textarea {
+    flex: 1;
+    width: 100%;
+    resize: none;
+    border-radius: 6px;
+    border: 1px solid var(--textarea-border);
+    background: var(--textarea-bg);
+    color: var(--text-main);
+    padding: 8px;
+    font-size: 18px;
+    line-height: 1.4;
+    outline: none;
+    caret-color: var(--accent-soft);
+  }
+
+  textarea::selection {
+    background: rgba(63,181,255,0.35);
+  }
+
+  .panel-footer {
+    margin-top: 6px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+  }
+
+  input[type="file"] {
+    display: none;
+  }
+
+  .hidden {
+    display: none;
+  }
+  
+  @media (max-width: 1100px) {
+    .toolbar {
+      flex-direction: column;
+    }
+    .toolbar-box.left,
+    .toolbar-box.right {
+      flex: none;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="app-root">
+  <div class="toolbar">
+    <div class="toolbar-box left">
+      <div class="toolbar-box-group">
+        <div class="slider-row">
+          <label for="wpmInput">WPM</label>
+          <input type="range" id="wpmInput" min="5" max="40" value="20">
+          <div class="slider-value" id="wpmValue">20</div>
+        </div>
+        <div class="slider-row">
+          <label for="freqInput">Frequency</label>
+          <input type="range" id="freqInput" min="300" max="1200" value="700">
+          <div class="slider-value" id="freqValue">700 Hz</div>
+        </div>
+        <div class="slider-row">
+          <label for="volumeSlider">Volume</label>
+          <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="0.4">
+          <div class="slider-value" id="volValue">0.40</div>
+        </div>
+        <div class="slider-row">
+          <label for="fontSlider">Font size</label>
+          <input type="range" id="fontSlider" min="14" max="32" value="20">
+          <div class="slider-value" id="fontValue">20px</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="toolbar-box">
+      <div class="toolbar-box-group">        
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+          <button class="btn btn-primary" id="btnPlayPauseGlobal">
+            <span class="btn-icon">▶︎</span> Play
+          </button>
+          <button class="btn" id="btnStopGlobal">
+            <span class="btn-icon">■</span> Stop
+          </button>
+          <div class="led-box">
+            <div class="led-indicator" id="ledIndicator"></div>
+            <div class="led-labels">
+              <span><strong>KEY</strong> STATE</span>
+              <span>Carrier: Sine · Filter: Bandpass</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="main-panels">
+    <div class="panel" id="panelText">
+      <div class="panel-header">
+        <div class="panel-title">Characters</div>
+        <div class="panel-buttons">
+          <button class="btn" id="btnImportText">Import TXT</button>
+          <button class="btn" id="btnExportText">Export TXT</button>
+          <button class="btn" id="btnCopyText">Copy</button>
+          <button class="btn" id="btnPasteText">Paste</button>
+          <button class="btn" id="btnUndoText">Undo</button>
+          <button class="btn" id="btnRedoText">Redo</button>
+        </div>
+      </div>
+      <textarea id="textArea" spellcheck="false"></textarea>
+      <div class="panel-footer">
+	    <button class="btn btn-primary" id="btnPlayText">Play</button>
+        <button class="btn" id="btnClearText">Clear</button>
+        <button class="btn" id="btnTextToPatterns">Convert to patterns</button>
+	  </div>
+      <input type="file" id="fileInputText" accept=".txt">
+    </div>
+
+    <div class="panel" id="panelPatterns">
+      <div class="panel-header">
+        <div class="panel-title">Patterns</div>
+        <div class="panel-buttons">
+          <button class="btn" id="btnImportPatterns">Import patterns</button>
+          <button class="btn" id="btnExportPatterns">Export patterns</button>
+          <button class="btn" id="btnCopyPatterns">Copy</button>
+          <button class="btn" id="btnPastePatterns">Paste</button>
+          <button class="btn" id="btnUndoPatterns">Undo</button>
+          <button class="btn" id="btnRedoPatterns">Redo</button>
+        </div>
+      </div>
+      <textarea id="patternArea" spellcheck="false"></textarea>
+      <div class="panel-footer">
+	    <button class="btn btn-primary" id="btnPlayPatterns">Play</button>
+        <button class="btn" id="btnClearPatterns">Clear</button>
+        <button class="btn" id="btnPatternsToText">Convert to characters</button>
+	  </div>
+      <input type="file" id="fileInputPatterns" accept=".txt">
+    </div>
+  </div>
+</div>
+
+<script>
+  const MORSE = {
+    "A": ".-","B":"-...","C":"-.-.","D":"-..","E":".","F":"..-.","G":"--.","H":"....",
+    "I":"..","J":".---","K":"-.-","L":".-..","M":"--","N":"-.","O":"---","P":".--.",
+    "Q":"--.-","R":".-.","S":"...","T":"-","U":"..-","V":"...-","W":".--","X":"-..-",
+    "Y":"-.--","Z":"--..",
+    "0":"-----","1":".----","2":"..---","3":"...--","4":"....-","5":".....","6":"-....","7":"--...","8":"---..","9":"----.",
+    ".":".-.-.-",",":"--..--","?":"..--..","'":".----.","!":"-.-.--","/":"-..-.","(":"-.--.",")":"-.--.-",
+    "&":".-...",":":"---...", ";":"-.-.-.","=":"-...-","+":".-.-.","-":"-....-","_":"..--.-","\"":".-..-.",
+    "$":"...-..-","@":".--.-."
+  };
+
+  const REVERSE_MORSE = {};
+  Object.keys(MORSE).forEach(k => { REVERSE_MORSE[MORSE[k]] = k; });
+
+  const textArea = document.getElementById('textArea');
+  const patternArea = document.getElementById('patternArea');
+
+  const btnImportText = document.getElementById('btnImportText');
+  const btnExportText = document.getElementById('btnExportText');
+  const btnCopyText = document.getElementById('btnCopyText');
+  const btnPasteText = document.getElementById('btnPasteText');
+  const btnUndoText = document.getElementById('btnUndoText');
+  const btnRedoText = document.getElementById('btnRedoText');
+  const btnPlayText = document.getElementById('btnPlayText');
+  const btnClearText = document.getElementById('btnClearText');
+  const btnTextToPatterns = document.getElementById('btnTextToPatterns');
+  const fileInputText = document.getElementById('fileInputText');
+
+  const btnImportPatterns = document.getElementById('btnImportPatterns');
+  const btnExportPatterns = document.getElementById('btnExportPatterns');
+  const btnCopyPatterns = document.getElementById('btnCopyPatterns');
+  const btnPastePatterns = document.getElementById('btnPastePatterns');
+  const btnUndoPatterns = document.getElementById('btnUndoPatterns');
+  const btnRedoPatterns = document.getElementById('btnRedoPatterns');
+  const btnPlayPatterns = document.getElementById('btnPlayPatterns');
+  const btnClearPatterns = document.getElementById('btnClearPatterns');
+  const btnPatternsToText = document.getElementById('btnPatternsToText');
+  const fileInputPatterns = document.getElementById('fileInputPatterns');
+
+  const btnPlayPauseGlobal = document.getElementById('btnPlayPauseGlobal');
+  const btnStopGlobal = document.getElementById('btnStopGlobal');
+  const ledIndicator = document.getElementById('ledIndicator');
+
+  const wpmInput = document.getElementById('wpmInput');
+  const wpmValue = document.getElementById('wpmValue');
+  const freqInput = document.getElementById('freqInput');
+  const freqValue = document.getElementById('freqValue');
+  const volumeSlider = document.getElementById('volumeSlider');
+  const volValue = document.getElementById('volValue');
+  const fontSlider = document.getElementById('fontSlider');
+  const fontValue = document.getElementById('fontValue');
+
+  let audioCtx = null;
+  let gainNode = null;
+  let filterNode = null;
+  let oscillator = null;
+
+  let isPlaying = false;
+  let isPaused = false;
+  let currentMode = null;
+  let resumeState = null;
+  let currentTimeout = null;
+
+  function ensureAudioContext(){
+    if (window._morseAudioContext){
+      audioCtx = window._morseAudioContext;
+    } else {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      window._morseAudioContext = audioCtx;
+    }
+
+    if (!gainNode){
+      gainNode = audioCtx.createGain();
+      gainNode.gain.value = Number(volumeSlider.value);
+    }
+    if (!filterNode){
+      filterNode = audioCtx.createBiquadFilter();
+      filterNode.type = 'bandpass';
+      filterNode.frequency.value = Number(freqInput.value);
+      filterNode.Q.value = 10;
+      filterNode.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+    }
+  }
+
+  function keyDown(){
+    ensureAudioContext();
+    if (oscillator){
+      oscillator.stop();
+      oscillator.disconnect();
+      oscillator = null;
+    }
+    oscillator = audioCtx.createOscillator();
+    oscillator.type = 'sine';
+    oscillator.frequency.value = Number(freqInput.value);
+    oscillator.connect(filterNode);
+    oscillator.start();
+    ledIndicator.classList.add('on');
+  }
+
+  function keyUp(){
+    if (oscillator){
+      oscillator.stop();
+      oscillator.disconnect();
+      oscillator = null;
+    }
+    ledIndicator.classList.remove('on');
+  }
+
+  function scrollToSelection(el){
+    requestAnimationFrame(() => {
+      const start = el.selectionStart;
+
+      const div = document.createElement("div");
+      const style = getComputedStyle(el);
+
+      for (let prop of [
+        "fontFamily","fontSize","lineHeight","padding","border",
+        "whiteSpace","width"
+      ]) {
+        div.style[prop] = style[prop];
+      }
+
+      div.style.position = "absolute";
+      div.style.visibility = "hidden";
+      div.style.whiteSpace = "pre-wrap";
+      div.style.wordWrap = "break-word";
+
+      div.textContent = el.value.substring(0, start);
+
+      document.body.appendChild(div);
+      const height = div.offsetHeight;
+      document.body.removeChild(div);
+
+      el.scrollTop = height - el.clientHeight / 2;
+    });
+  }
+
+  function highlightChar(area, index){
+    area.focus();
+    area.selectionStart = index;
+    area.selectionEnd = index + 1;
+    scrollToSelection(area);
+  }
+
+  function highlightToken(area, start, end){
+    area.focus();
+    area.selectionStart = start;
+    area.selectionEnd = end;
+    scrollToSelection(area);
+  }
+
+  function stopPlaying(){
+    isPlaying = false;
+    isPaused = false;
+    resumeState = null;
+    if (currentTimeout){
+      clearTimeout(currentTimeout);
+      currentTimeout = null;
+    }
+    keyUp();
+    btnPlayPauseGlobal.textContent = 'Play';
+  }
+
+  function pausePlaying(){
+    isPlaying = false;
+    isPaused = true;
+    if (currentTimeout){
+      clearTimeout(currentTimeout);
+      currentTimeout = null;
+    }
+    keyUp();
+    btnPlayPauseGlobal.textContent = 'Play';
+  }
+
+  function computeTiming(){
+    const wpm = Math.max(5, Number(wpmInput.value) || 20);
+    const dotMs = 1200 / wpm;
+    return {
+      dotMs,
+      dashMs: dotMs * 3,
+      intraCharGap: dotMs,
+      interLetterGap: dotMs * 3,
+      interWordGap: dotMs * 7
+    };
+  }
+
+  function playText(text, opts = {}, resume = null){
+    if (!text || !text.trim()) return;
+    if (isPlaying) stopPlaying();
+
+    ensureAudioContext();
+    const timing = computeTiming();
+
+    let index = resume ? resume.index : 0;
+    isPlaying = true;
+    isPaused = false;
+    currentMode = 'text';
+
+    function step(){
+      if (!isPlaying){
+        keyUp();
+        return;
+      }
+      if (index >= text.length){
+        stopPlaying();
+        return;
+      }
+
+      const ch = text[index];
+      const upper = ch.toUpperCase();
+      const isSpace = ch === ' ';
+
+      if (opts.highlight){
+        highlightChar(textArea, index);
+      }
+
+      let pattern = MORSE[upper] || '';
+      let duration = 0;
+      let gapAfter = timing.interLetterGap;
+
+      if (isSpace){
+        keyUp();
+        duration = timing.interWordGap;
+        gapAfter = 0;
+      } else if (!pattern){
+        keyUp();
+        duration = timing.interLetterGap;
+      } else {
+        let seq = pattern.split('');
+        let i = 0;
+
+        function playSymbol(){
+          if (!isPlaying){
+            keyUp();
+            return;
+          }
+          if (i >= seq.length){
+            keyUp();
+            currentTimeout = setTimeout(() => {
+              index++;
+              resumeState = { mode: 'text', index };
+              step();
+            }, timing.interLetterGap);
+            return;
+          }
+          const s = seq[i];
+          const len = s === '.' ? timing.dotMs : timing.dashMs;
+          keyDown();
+          currentTimeout = setTimeout(() => {
+            keyUp();
+            currentTimeout = setTimeout(() => {
+              i++;
+              playSymbol();
+            }, timing.intraCharGap);
+          }, len);
+        }
+
+        resumeState = { mode: 'text', index };
+        playSymbol();
+        return;
+      }
+
+      resumeState = { mode: 'text', index };
+      currentTimeout = setTimeout(() => {
+        index++;
+        step();
+      }, duration + gapAfter);
+    }
+
+    step();
+  }
+
+  function playPatterns(patternText, opts = {}, resume = null){
+    if (!patternText || !patternText.trim()) return;
+    if (isPlaying) stopPlaying();
+
+    ensureAudioContext();
+    const timing = computeTiming();
+
+    const tokens = [];
+    let pos = 0;
+    const raw = patternText;
+
+    while (pos < raw.length){
+      if (raw[pos] === ' ' || raw[pos] === '\n' || raw[pos] === '\t'){
+        pos++;
+        continue;
+      }
+      if (raw[pos] === '/'){
+        tokens.push({ type: 'wordgap', start: pos, end: pos + 1, pattern: '/' });
+        pos++;
+        continue;
+      }
+      let start = pos;
+      let buf = '';
+      while (pos < raw.length && (raw[pos] === '.' || raw[pos] === '-')){
+        buf += raw[pos];
+        pos++;
+      }
+      if (buf.length){
+        tokens.push({ type: 'letter', start, end: pos, pattern: buf });
+      } else {
+        pos++;
+      }
+    }
+
+    let idx = resume ? resume.index : 0;
+    isPlaying = true;
+    isPaused = false;
+    currentMode = 'patterns';
+
+    function step(){
+      if (!isPlaying){
+        keyUp();
+        return;
+      }
+      if (idx >= tokens.length){
+        stopPlaying();
+        return;
+      }
+
+      const token = tokens[idx];
+
+      if (opts.highlight){
+        highlightToken(patternArea, token.start, token.end);
+      }
+
+      if (token.type === 'wordgap'){
+        keyUp();
+        resumeState = { mode: 'patterns', index: idx };
+        currentTimeout = setTimeout(() => {
+          idx++;
+          step();
+        }, timing.interWordGap);
+        return;
+      }
+
+      const seq = token.pattern.split('');
+      let i = 0;
+
+      function playSymbol(){
+        if (!isPlaying){
+          keyUp();
+          return;
+        }
+        if (i >= seq.length){
+          keyUp();
+          resumeState = { mode: 'patterns', index: idx };
+          currentTimeout = setTimeout(() => {
+            idx++;
+            step();
+          }, timing.interLetterGap);
+          return;
+        }
+        const s = seq[i];
+        const len = s === '.' ? timing.dotMs : timing.dashMs;
+        keyDown();
+        currentTimeout = setTimeout(() => {
+          keyUp();
+          currentTimeout = setTimeout(() => {
+            i++;
+            playSymbol();
+          }, timing.intraCharGap);
+        }, len);
+      }
+
+      playSymbol();
+    }
+
+    step();
+  }
+
+  function startFromCurrentMode(){
+    if (currentMode === 'patterns'){
+      playPatterns(patternArea.value, {highlight:true}, resumeState && resumeState.mode === 'patterns' ? resumeState : null);
+    } else {
+      currentMode = 'text';
+      playText(textArea.value, {highlight:true}, resumeState && resumeState.mode === 'text' ? resumeState : null);
+    }
+    btnPlayPauseGlobal.textContent = 'Pause';
+  }
+
+  btnPlayPauseGlobal.addEventListener('click', () => {
+    if (!isPlaying && !isPaused){
+      currentMode = currentMode || 'text';
+      startFromCurrentMode();
+    } else if (isPlaying){
+      pausePlaying();
+    } else if (isPaused){
+      startFromCurrentMode();
+    }
+  });
+
+  btnStopGlobal.addEventListener('click', () => {
+    stopPlaying();
+  });
+
+  btnPlayText.addEventListener('click', () => {
+    stopPlaying();
+    currentMode = 'text';
+    playText(textArea.value, {highlight:true});
+    btnPlayPauseGlobal.textContent = 'Pause';
+  });
+
+  btnPlayPatterns.addEventListener('click', () => {
+    stopPlaying();
+    currentMode = 'patterns';
+    playPatterns(patternArea.value, {highlight:true});
+    btnPlayPauseGlobal.textContent = 'Pause';
+  });
+
+  wpmInput.addEventListener('input', () => {
+    wpmValue.textContent = wpmInput.value;
+  });
+
+  freqInput.addEventListener('input', () => {
+    freqValue.textContent = freqInput.value + ' Hz';
+    if (filterNode){
+      filterNode.frequency.value = Number(freqInput.value);
+    }
+  });
+
+  volumeSlider.addEventListener('input', () => {
+    volValue.textContent = Number(volumeSlider.value).toFixed(2);
+    if (gainNode){
+      gainNode.gain.value = Number(volumeSlider.value);
+    }
+  });
+
+  fontSlider.addEventListener('input', () => {
+    const size = fontSlider.value + 'px';
+    textArea.style.fontSize = size;
+    patternArea.style.fontSize = size;
+    fontValue.textContent = size;
+  });
+
+  // Clipboard & file helpers
+  async function copyFrom(area){
+    try {
+      await navigator.clipboard.writeText(area.value);
+    } catch(e){}
+  }
+
+  async function pasteInto(area){
+    try {
+      const txt = await navigator.clipboard.readText();
+      area.value += txt;
+    } catch(e){}
+  }
+
+  function exportText(filename, content){
+    const blob = new Blob([content], {type: 'text/plain'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function importText(fileInput, area){
+    fileInput.click();
+    fileInput.onchange = () => {
+      const file = fileInput.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        area.value = e.target.result;
+      };
+      reader.readAsText(file);
+    };
+  }
+
+  // Undo/Redo via execCommand (simple)
+  btnUndoText.addEventListener('click', () => document.execCommand('undo'));
+  btnRedoText.addEventListener('click', () => document.execCommand('redo'));
+  btnUndoPatterns.addEventListener('click', () => document.execCommand('undo'));
+  btnRedoPatterns.addEventListener('click', () => document.execCommand('redo'));
+
+  btnCopyText.addEventListener('click', () => copyFrom(textArea));
+  btnPasteText.addEventListener('click', () => pasteInto(textArea));
+  btnCopyPatterns.addEventListener('click', () => copyFrom(patternArea));
+  btnPastePatterns.addEventListener('click', () => pasteInto(patternArea));
+
+  btnImportText.addEventListener('click', () => importText(fileInputText, textArea));
+  btnExportText.addEventListener('click', () => exportText('morse_text.txt', textArea.value));
+  btnImportPatterns.addEventListener('click', () => importText(fileInputPatterns, patternArea));
+  btnExportPatterns.addEventListener('click', () => exportText('morse_patterns.txt', patternArea.value));
+
+  btnClearText.addEventListener('click', () => { textArea.value = ''; });
+  btnClearPatterns.addEventListener('click', () => { patternArea.value = ''; });
+
+  // Conversions
+  btnTextToPatterns.addEventListener('click', () => {
+    const text = textArea.value;
+    const words = text.split(/\s+/);
+    const out = [];
+    words.forEach((w, wi) => {
+      const chars = w.split('');
+      const pattChars = [];
+      chars.forEach(ch => {
+        const upper = ch.toUpperCase();
+        if (MORSE[upper]){
+          pattChars.push(MORSE[upper]);
+        }
+      });
+      if (pattChars.length){
+        out.push(pattChars.join(' '));
+      }
+      if (wi < words.length - 1){
+        out.push('/');
+      }
+    });
+    patternArea.value = out.join(' ');
+  });
+
+  btnPatternsToText.addEventListener('click', () => {
+    const raw = patternArea.value.trim();
+    if (!raw){
+      textArea.value = '';
+      return;
+    }
+    const words = raw.split(/\s*\/\s*/);
+    const outWords = words.map(w => {
+      const letters = w.trim().split(/\s+/);
+      const chars = letters.map(p => REVERSE_MORSE[p] || '');
+      return chars.join('');
+    });
+    textArea.value = outWords.join(' ');
+  });
+
+  // Initial UI sync
+  wpmValue.textContent = wpmInput.value;
+  freqValue.textContent = freqInput.value + ' Hz';
+  volValue.textContent = Number(volumeSlider.value).toFixed(2);
+  fontValue.textContent = fontSlider.value + 'px';
+  textArea.style.fontSize = fontSlider.value + 'px';
+  patternArea.style.fontSize = fontSlider.value + 'px';
+</script>
+</body>
+</html>
