@@ -1,0 +1,1848 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Morse Code Translator</title>
+
+  <style>
+    :root {
+      --bg-main: #05060a;
+      --border-metal: #8f9a96;
+      --text-main: #f2f2f2;
+      --text-dim: #a9b0aa;
+      --textarea-bg: #05060a;
+      --textarea-border: #3a4240;
+      --accent: #ffb347;
+      --accent-soft: #ffdd99;
+      --accent-strong: #ff8c00;
+      --btn-border: #7f8a84;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: var(--bg-main);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .app-root {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      padding: 10px 14px;
+      gap: 10px;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    .toolbar-box {
+      background: linear-gradient(to bottom, #3b433f, #2e3834);
+      border-radius: 6px;
+      border: 1px solid var(--border-metal);
+      box-shadow:
+        inset 0 0 0 1px rgba(0, 0, 0, 0.7),
+        0 4px 10px rgba(0, 0, 0, 0.7);
+      padding: 8px 10px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .toolbar-box.left {
+      flex: 1.4;
+      justify-content: space-between;
+    }
+
+    .toolbar-box.right {
+      flex: 0.9;
+      justify-content: space-between;
+    }
+
+    .toolbar-box-group {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      gap: 23px;
+    }
+
+    .control-row {
+      display: flex;
+      align-items: center;
+    }
+
+    label {
+      letter-spacing: 0.12em;
+      color: var(--text-dim);
+      font-size: 11px;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    input[type=number] {
+      width: 70px;
+      padding: 6px 10px;
+      border-radius: 4px;
+      border: 1px solid #8f9a96;
+      background: #10141a;
+      color: var(--accent-soft);
+      font-size: 11px;
+      outline: none;
+    }
+
+    .slider-row {
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--text-dim);
+      width: 100%;
+      margin-right: 4px;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .slider-row label {
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .slider-row input[type="range"] {
+      flex: 1;
+      accent-color: var(--accent-strong);
+      background: #05060a;
+    }
+
+    .slider-value {
+      min-width: 40px;
+      text-align: right;
+      color: var(--accent-soft);
+      font-size: 11px;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 4px;
+      border-radius: 999px;
+      background: #111;
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 1px solid #000;
+      box-shadow:
+        0 0 4px rgba(255, 140, 0, 0.8),
+        0 0 0 1px rgba(0, 0, 0, 0.8);
+      cursor: pointer;
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 1px solid #000;
+      box-shadow:
+        0 0 4px rgba(255, 140, 0, 0.8),
+        0 0 0 1px rgba(0, 0, 0, 0.8);
+      cursor: pointer;
+    }
+
+    input[type="range"]::-moz-range-track {
+      height: 4px;
+      border-radius: 999px;
+      background: #05060a;
+    }
+
+    button {
+      background: linear-gradient(to bottom, #4a5450, #2f3533);
+      border: 1px solid var(--btn-border);
+      color: var(--text-main);
+      border-radius: 4px;
+      padding: 6px 10px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      cursor: pointer;
+      box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.08),
+        0 2px 4px rgba(0, 0, 0, 0.7);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    button:hover {
+      background: linear-gradient(to bottom, #596460, #383f3d);
+    }
+
+    button:active {
+      transform: translateY(1px);
+      box-shadow:
+        0 0 0 rgba(0, 0, 0, 0.7);
+    }
+
+    .btn-primary {
+      border-color: var(--accent);
+      background: linear-gradient(to bottom, #ffb347, #c77a1f);
+      color: #20160a;
+      font-weight: 700;
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(to bottom, #ffd18a, #d8892a);
+    }
+
+    .main-panels {
+      flex: 1;
+      display: flex;
+      gap: 10px;
+      min-height: 0;
+    }
+
+    .panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: linear-gradient(to bottom, #3b433f, #2e3834);
+      border-radius: 8px;
+      border: 1px solid var(--border-metal);
+      box-shadow:
+        inset 0 0 0 1px rgba(0, 0, 0, 0.7),
+        0 4px 10px rgba(0, 0, 0, 0.7);
+      padding: 8px;
+      min-height: 0;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      gap: 4px;
+    }
+
+    .panel-title {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--text-dim);
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .panel-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .panel-body {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+    }
+
+    .panel-footer {
+      margin-top: 6px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 6px;
+    }
+
+    textarea {
+      width: 100%;
+      height: 100%;
+      resize: none;
+      border-radius: 6px;
+      border: 1px solid var(--textarea-border);
+      outline: none;
+      padding: 8px;
+      background: var(--textarea-bg);
+      color: var(--text-main);
+      line-height: 1.5;
+      font-size: 28px;
+      font-family: Consolas, monospace;
+      caret-color: var(--accent-soft);
+    }
+
+    textarea::selection {
+      background: rgba(152, 3, 1, 1);
+    }
+
+    .led-box {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      border: 1px solid #8f9a96;
+      background: #10141a;
+      min-width: 170px;
+    }
+
+    .led-indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      background: #3a2a10;
+      box-shadow: inset 0 0 4px rgba(0, 0, 0, .8);
+    }
+
+    .led-indicator.on {
+      background: #ff8c00;
+      box-shadow:
+        0 0 6px rgba(255, 140, 0, .9),
+        0 0 14px rgba(255, 140, 0, .7);
+    }
+
+    .led-labels {
+      display: flex;
+      flex-direction: column;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      color: var(--text-dim);
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .led-labels span strong {
+      color: var(--accent-soft);
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    @media (max-width: 1100px) {
+      .toolbar {
+        flex-direction: column;
+      }
+
+      .toolbar-box.left,
+      .toolbar-box.right {
+        flex: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app-root">
+    <div class="toolbar">
+      <div class="toolbar-box left">
+        <div class="toolbar-box-group">
+          <div class="control-row">
+            <label>WPM
+              <input id="wpm" type="number" min="5" max="80" value="20">
+            </label>
+          </div>
+          <div class="control-row">
+            <label>Farnsworth
+              <input id="farnsworth" type="number" min="5" max="80" value="20">
+            </label>
+          </div>
+          <div class="control-row">
+            <label>Frequency
+              <input id="freq" type="number" value="650" min="100" max="2000">
+            </label>
+          </div>
+          <div class="control-row">
+            <label>Letter Gap
+              <input id="letterGap" type="number" value="1" min="0.1" max="10" step="0.1">
+            </label>
+          </div>
+          <div class="slider-row">
+            <label>Volume</label>
+            <input id="volume" type="range" min="0" max="1" step="0.01" value="0.25">
+            <div class="slider-value" id="volValue">0.25</div>
+          </div>
+          <div class="slider-row">
+            <label>Font</label>
+            <input id="fontSlider" type="range" min="16" max="56" value="28">
+            <div class="slider-value" id="fontValue">28px</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="toolbar-box">
+        <div class="toolbar-box-group">
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <button class="btn-primary" id="btnPlayPauseGlobal">Play / Pause</button>
+            <button id="btnStop">Stop</button>
+            <div class="led-box">
+              <div id="led" class="led-indicator"></div>
+              <div class="led-labels">
+                <span><strong>KEY</strong> Down Indicator</span>
+                <span>Sine CW tone · bandpass filter</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="main-panels">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Characters</div>
+          <div class="panel-buttons">
+            <button id="btnImportText">Import Text</button>
+            <button id="btnExportText">Export Text</button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <textarea id="textArea" spellcheck="false"></textarea>
+        </div>
+        <div class="panel-footer">
+          <button class="btn-primary" id="btnPlayText">Play</button>
+          <button id="btnClearText">Clear</button>
+          <button id="btnTextToPattern">Convert To Patterns</button>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Patterns</div>
+          <div class="panel-buttons">
+            <button id="btnImportPattern">Import Patterns</button>
+            <button id="btnExportPattern">Export Patterns</button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <textarea id="patternArea" spellcheck="false"></textarea>
+        </div>
+        <div class="panel-footer">
+          <button class="btn-primary" id="btnPlayPattern">Play</button>
+          <button id="btnClearPattern">Clear</button>
+          <button id="btnPatternToText">Convert To Characters</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <input type="file" id="filePicker" accept=".txt" class="hidden">
+
+  <script>
+    const MORSE = {
+      "A": ".-",
+      "B": "-...",
+      "C": "-.-.",
+      "D": "-..",
+      "E": ".",
+      "F": "..-.",
+      "G": "--.",
+      "H": "....",
+      "I": "..",
+      "J": ".---",
+      "K": "-.-",
+      "L": ".-..",
+      "M": "--",
+      "N": "-.",
+      "O": "---",
+      "P": ".--.",
+      "Q": "--.-",
+      "R": ".-.",
+      "S": "...",
+      "T": "-",
+      "U": "..-",
+      "V": "...-",
+      "W": ".--",
+      "X": "-..-",
+      "Y": "-.--",
+      "Z": "--..",
+      "0": "-----",
+      "1": ".----",
+      "2": "..---",
+      "3": "...--",
+      "4": "....-",
+      "5": ".....",
+      "6": "-....",
+      "7": "--...",
+      "8": "---..",
+      "9": "----.",
+      ".": ".-.-.-",
+      ",": "--..--",
+      "?": "..--..",
+      "'": ".----.",
+      "!": "-.-.--",
+      "/": "-..-.",
+      "(": "-.--.",
+      ")": "-.--.-",
+      "&": ".-...",
+      ":": "---...",
+      ";": "-.-.-.",
+      "=": "-...-",
+      "+": ".-.-.",
+      "-": "-....-",
+      "_": "..--.-",
+      "\"": ".-..-.",
+      "$": "...-..-",
+      "@": ".--.-."
+    };
+    const REVERSE_MORSE = {};
+    Object.entries(MORSE).forEach(([k, v]) => {
+      REVERSE_MORSE[v] = k;
+    });
+    const textArea = document.getElementById("textArea");
+    const patternArea = document.getElementById("patternArea");
+    const wpmInput = document.getElementById("wpm");
+    const freqInput = document.getElementById("freq");
+    const farnsworthInput = document.getElementById("farnsworth");
+    const gapInput = document.getElementById("letterGap");
+    const volumeSlider = document.getElementById("volume");
+    const fontSlider = document.getElementById("fontSlider");
+    const volValue = document.getElementById("volValue");
+    const fontValue = document.getElementById("fontValue");
+    const led = document.getElementById("led");
+    const btnPlayText = document.getElementById("btnPlayText");
+    const btnPlayPattern = document.getElementById("btnPlayPattern");
+    const btnPlayPauseGlobal =
+      document.getElementById("btnPlayPauseGlobal");
+    const btnStop =
+      document.getElementById("btnStop");
+    let gainNode = null;
+    let filterNode = null;
+    let isPlaying = false;
+    let isPaused = false;
+    let scheduledTimeouts = [];
+    let resumeState = {
+      mode: null,
+      index: 0
+    };
+
+    function clearScheduled() {
+      while (scheduledTimeouts.length) {
+        clearTimeout(scheduledTimeouts.pop());
+      }
+    }
+
+    function ledOn() {
+      led.classList.add("on");
+    }
+
+    function ledOff() {
+      led.classList.remove("on");
+    }
+
+    function ensureAudioContext() {
+      if (!window._morseAudioContext) {
+        window._morseAudioContext =
+          new AudioContext();
+      }
+      const ctx =
+        window._morseAudioContext;
+      if (!gainNode) {
+        gainNode =
+          ctx.createGain();
+        gainNode.gain.value =
+          Number(volumeSlider.value);
+        filterNode =
+          ctx.createBiquadFilter();
+        filterNode.type = "bandpass";
+        filterNode.frequency.value = 700;
+        filterNode.Q.value = 6;
+        filterNode.connect(gainNode);
+        gainNode.connect(ctx.destination);
+      }
+      return ctx;
+    }
+
+    function startTone() {
+      if (isPaused) return;
+      const ctx =
+        ensureAudioContext();
+      const osc =
+        ctx.createOscillator();
+      osc.type = "sine";
+      osc.frequency.value =
+        Number(freqInput.value) || 650;
+      osc.connect(filterNode);
+      osc.start();
+      window._currentOscillator = osc;
+      ledOn();
+    }
+
+    function stopTone() {
+      ledOff();
+      const osc =
+        window._currentOscillator;
+      if (!osc) return;
+      try {
+        osc.stop();
+        osc.disconnect();
+      } catch (e) {}
+      window._currentOscillator = null;
+    }
+
+    function scrollToSelection(el) {
+      requestAnimationFrame(() => {
+        const start =
+          el.selectionStart;
+        const div =
+          document.createElement("div");
+        const style =
+          getComputedStyle(el);
+        [
+          "fontFamily",
+          "fontSize",
+          "lineHeight",
+          "padding",
+          "border",
+          "whiteSpace",
+          "width"
+        ].forEach(prop => {
+          div.style[prop] =
+            style[prop];
+        });
+        div.style.position = "absolute";
+        div.style.visibility = "hidden";
+        div.style.whiteSpace = "pre-wrap";
+        div.style.wordWrap = "break-word";
+        div.textContent =
+          el.value.substring(0, start);
+        document.body.appendChild(div);
+        const height =
+          div.offsetHeight;
+        document.body.removeChild(div);
+        el.scrollTo({
+          top: Math.max(
+            0,
+            height - el.clientHeight / 2
+          ),
+          behavior: "smooth"
+        });
+      });
+    }
+
+    function highlightChar(area, index) {
+      if (index < 0) return;
+      if (index >= area.value.length)
+        return;
+      area.focus();
+      area.selectionStart = index;
+      area.selectionEnd = index + 1;
+      scrollToSelection(area);
+    }
+
+    function highlightToken(area, tokenIndex) {
+      const full =
+        area.value;
+      let count = 0;
+      const re = /\S+/g;
+      let m;
+      while ((m = re.exec(full)) !== null) {
+        if (count === tokenIndex) {
+          area.focus();
+          area.selectionStart =
+            m.index;
+          area.selectionEnd =
+            m.index +
+            m[0].length;
+          scrollToSelection(area);
+          break;
+        }
+        count++;
+      }
+    }
+
+    function exportText(filename, content) {
+      const blob =
+        new Blob(
+          [content], {
+            type: "text/plain"
+          }
+        );
+      const url =
+        URL.createObjectURL(blob);
+      const a =
+        document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function importText(callback) {
+      filePicker.value = "";
+      filePicker.onchange = e => {
+        const file =
+          e.target.files[0];
+        if (!file) return;
+        const reader =
+          new FileReader();
+        reader.onload = () => {
+          callback(
+            String(reader.result)
+          );
+        };
+        reader.readAsText(file);
+      };
+      filePicker.click();
+    }
+
+    function textToPatterns(text) {
+      let out = [];
+      text = text.toUpperCase();
+      for (let i = 0; i < text.length; i++) {
+        const ch = text[i];
+        if (ch === " ") {
+          out.push("/");
+          continue;
+        }
+        const pat =
+          MORSE[ch];
+        if (pat) {
+          out.push(pat);
+        }
+      }
+      return out.join(" ");
+    }
+
+    function patternsToText(patterns) {
+      let text = [];
+      const tokens =
+        patterns.trim()
+        .split(/\s+/);
+      for (const token of tokens) {
+        if (token === "/") {
+          text.push(" ");
+          continue;
+        }
+        text.push(
+          REVERSE_MORSE[token] || "?"
+        );
+      }
+      return text.join("");
+    }
+    document
+      .getElementById("btnTextToPattern")
+      .addEventListener("click", () => {
+        patternArea.value =
+          textToPatterns(
+            textArea.value
+          );
+      });
+    document
+      .getElementById("btnPatternToText")
+      .addEventListener("click", () => {
+        textArea.value =
+          patternsToText(
+            patternArea.value
+          );
+      });
+    document
+      .getElementById("btnClearText")
+      .addEventListener("click", () => {
+        textArea.value = "";
+      });
+    document
+      .getElementById("btnClearPattern")
+      .addEventListener("click", () => {
+        patternArea.value = "";
+      });
+    document
+      .getElementById("btnExportText")
+      .addEventListener("click", () => {
+        exportText(
+          "text.txt",
+          textArea.value
+        );
+      });
+    document
+      .getElementById("btnExportPattern")
+      .addEventListener("click", () => {
+        exportText(
+          "patterns.txt",
+          patternArea.value
+        );
+      });
+    document
+      .getElementById("btnImportText")
+      .addEventListener("click", () => {
+        importText(content => {
+          textArea.value =
+            content;
+        });
+      });
+    document
+      .getElementById("btnImportPattern")
+      .addEventListener("click", () => {
+        importText(content => {
+          patternArea.value =
+            content;
+        });
+      });
+    volumeSlider.addEventListener(
+      "input",
+      () => {
+        volValue.textContent =
+          Number(
+            volumeSlider.value
+          ).toFixed(2);
+        if (gainNode) {
+          gainNode.gain.value =
+            Number(volumeSlider.value);
+        }
+      }
+    );
+    fontSlider.addEventListener(
+      "input",
+      () => {
+        const size =
+          fontSlider.value + "px";
+        textArea.style.fontSize = size;
+        patternArea.style.fontSize = size;
+        fontValue.textContent = size;
+      }
+    );
+
+    function stopPlaying() {
+      isPlaying = false;
+      isPaused = false;
+      clearScheduled();
+      stopTone();
+      btnPlayPauseGlobal.textContent =
+        "Play";
+    }
+
+    function pausePlaying() {
+      isPaused = true;
+      stopTone();
+      clearScheduled();
+      btnPlayPauseGlobal.textContent =
+        "Resume";
+    }
+
+    function playText(text, opts = {}, resume = null) {
+      if (!text.length) return;
+      if (isPlaying)
+        stopPlaying();
+      ensureAudioContext();
+      const wpm =
+        Math.max(
+          5,
+          Number(wpmInput.value) || 20
+        );
+      const farnsworth =
+        Math.min(
+          wpm,
+          Number(farnsworthInput.value) || wpm
+        );
+      const letterGapFactor =
+        Math.max(
+          0.1,
+          Number(gapInput.value) || 1
+        );
+      const dotMs =
+        1200 / wpm;
+      const dashMs =
+        dotMs * 3;
+      const spaceScale =
+        Math.max(
+          0.01,
+          farnsworth / wpm
+        );
+      const intraCharGap =
+        dotMs;
+      const interLetterGap =
+        ((dotMs * 3) / spaceScale) *
+        letterGapFactor;
+      const interWordGap =
+        (dotMs * 7) / spaceScale;
+      const startIndex =
+        resume &&
+        resume.index != null ?
+        resume.index :
+        0;
+      let t = 0;
+      isPlaying = true;
+      isPaused = false;
+      btnPlayPauseGlobal.textContent =
+        "Pause";
+      for (
+        let i = startIndex; i < text.length; i++
+      ) {
+        const ch =
+          text[i];
+        ((index, timeOffset, char) => {
+          if (opts.highlight) {
+            const h =
+              setTimeout(() => {
+                if (
+                  !isPlaying ||
+                  isPaused
+                ) return;
+                highlightChar(
+                  textArea,
+                  index
+                );
+                resumeState = {
+                  mode: "text",
+                  index: index
+                };
+              }, timeOffset);
+            scheduledTimeouts.push(h);
+          }
+        })(i, t, ch);
+        const upper =
+          ch.toUpperCase();
+        if (ch === " ") {
+          t += interWordGap;
+          continue;
+        }
+        const pattern =
+          MORSE[upper];
+        if (!pattern)
+          continue;
+        for (
+          let s = 0; s < pattern.length; s++
+        ) {
+          const isDot =
+            pattern[s] === ".";
+          const dur =
+            isDot ?
+            dotMs :
+            dashMs;
+          const toneOn =
+            setTimeout(() => {
+              if (
+                !isPlaying ||
+                isPaused
+              ) return;
+              startTone();
+            }, t);
+          const toneOff =
+            setTimeout(() => {
+              stopTone();
+            }, t + dur);
+          scheduledTimeouts.push(
+            toneOn,
+            toneOff
+          );
+          t += dur;
+          if (
+            s <
+            pattern.length - 1
+          ) {
+            t += intraCharGap;
+          }
+        }
+        t += interLetterGap;
+      }
+      const done =
+        setTimeout(() => {
+          stopPlaying();
+        }, t + 50);
+      scheduledTimeouts.push(done);
+    }
+
+    function resumePlaying() {
+      if (!isPaused)
+        return;
+      if (
+        resumeState.mode === "text"
+      ) {
+        playText(
+          textArea.value, {
+            highlight: true
+          },
+          resumeState
+        );
+      } else if (
+        resumeState.mode === "patterns"
+      ) {
+        playPatterns(
+          patternArea.value, {
+            highlight: true
+          },
+          resumeState
+        );
+      }
+      btnPlayPauseGlobal.textContent =
+        "Pause";
+    }
+    btnPlayText
+      .addEventListener(
+        "click",
+        () => {
+          playText(
+            textArea.value, {
+              highlight: true
+            }
+          );
+        }
+      );
+    btnPlayPauseGlobal
+      .addEventListener(
+        "click",
+        () => {
+          if (!isPlaying) {
+            playText(
+              textArea.value, {
+                highlight: true
+              }
+            );
+            return;
+          }
+          if (isPaused) {
+            resumePlaying();
+          } else {
+            pausePlaying();
+          }
+        }
+      );
+    btnStop
+      .addEventListener(
+        "click",
+        () => {
+          stopPlaying();
+        }
+      );
+
+    function playPatterns(
+      patternText,
+      opts = {},
+      resume = null
+    ) {
+      if (
+        !patternText ||
+        !patternText.trim()
+      ) return;
+      if (isPlaying)
+        stopPlaying();
+      ensureAudioContext();
+      const wpm =
+        Math.max(
+          5,
+          Number(wpmInput.value) || 20
+        );
+      const farnsworth =
+        Math.min(
+          wpm,
+          Number(farnsworthInput.value) || wpm
+        );
+      const letterGapFactor =
+        Math.max(
+          0.1,
+          Number(gapInput.value) || 1
+        );
+      const dotMs =
+        1200 / wpm;
+      const dashMs =
+        dotMs * 3;
+      const spaceScale =
+        Math.max(
+          0.01,
+          farnsworth / wpm
+        );
+      const intraCharGap =
+        dotMs;
+      const interLetterGap =
+        ((dotMs * 3) / spaceScale) *
+        letterGapFactor;
+      const interWordGap =
+        (dotMs * 7) / spaceScale;
+      const tokens =
+        patternText
+        .trim()
+        .split(/\s+/);
+      const startIndex =
+        (
+          resume &&
+          resume.index != null
+        ) ?
+        resume.index :
+        0;
+      let t = 0;
+      isPlaying = true;
+      isPaused = false;
+      btnPlayPauseGlobal.textContent =
+        "Pause";
+      for (
+        let i = startIndex; i < tokens.length; i++
+      ) {
+        const tok =
+          tokens[i];
+        (
+          function(
+            idx,
+            timeOffset,
+            token
+          ) {
+            if (opts.highlight) {
+              const timeout =
+                setTimeout(() => {
+                  if (
+                    !isPlaying ||
+                    isPaused
+                  ) return;
+                  highlightToken(
+                    patternArea,
+                    idx
+                  );
+                  resumeState = {
+                    mode: "patterns",
+                    index: idx
+                  };
+                }, timeOffset);
+              scheduledTimeouts.push(
+                timeout
+              );
+            }
+          }
+        )(i, t, tok);
+        if (tok === "/") {
+          t += interWordGap;
+          continue;
+        }
+        const pat = tok;
+        for (
+          let s = 0; s < pat.length; s++
+        ) {
+          const symbol =
+            pat[s];
+          if (
+            symbol !== "." &&
+            symbol !== "-"
+          ) {
+            continue;
+          }
+          const dur =
+            symbol === "." ?
+            dotMs :
+            dashMs;
+          const toneStart =
+            setTimeout(() => {
+              if (
+                !isPlaying ||
+                isPaused
+              ) return;
+              startTone();
+            }, t);
+          const toneStop =
+            setTimeout(() => {
+              stopTone();
+            }, t + dur);
+          scheduledTimeouts.push(
+            toneStart,
+            toneStop
+          );
+          t += dur;
+          if (
+            s < pat.length - 1
+          ) {
+            t += intraCharGap;
+          }
+        }
+        t += interLetterGap;
+      }
+      const finalTimeout =
+        setTimeout(() => {
+          stopPlaying();
+        }, t + 50);
+      scheduledTimeouts.push(
+        finalTimeout
+      );
+    }
+    btnPlayPattern
+      .addEventListener(
+        "click",
+        () => {
+          playPatterns(
+            patternArea.value, {
+              highlight: true
+            }
+          );
+        }
+      );
+
+    function playCurrentMode() {
+      if (
+        resumeState.mode ===
+        "patterns"
+      ) {
+        playPatterns(
+          patternArea.value, {
+            highlight: true
+          }
+        );
+        return;
+      }
+      playText(
+        textArea.value, {
+          highlight: true
+        }
+      );
+    }
+    btnPlayPauseGlobal
+      .replaceWith(
+        btnPlayPauseGlobal.cloneNode(true)
+      );
+    const newPlayPause =
+      document.getElementById(
+        "btnPlayPauseGlobal"
+      );
+    newPlayPause.addEventListener(
+      "click",
+      async () => {
+        try {
+          const ctx =
+            ensureAudioContext();
+          if (
+            ctx.state ===
+            "suspended"
+          ) {
+            await ctx.resume();
+          }
+        } catch (e) {}
+        if (!isPlaying) {
+          playCurrentMode();
+          return;
+        }
+        if (isPaused) {
+          resumePlaying();
+        } else {
+          pausePlaying();
+        }
+      }
+    );
+    btnStop.addEventListener(
+      "click",
+      () => {
+        stopPlaying();
+        textArea.selectionStart = 0;
+        textArea.selectionEnd = 0;
+        patternArea.selectionStart = 0;
+        patternArea.selectionEnd = 0;
+      }
+    );
+    freqInput.addEventListener(
+      "input",
+      () => {
+        if (
+          window._currentOscillator
+        ) {
+          try {
+            window
+              ._currentOscillator
+              .frequency
+              .setValueAtTime(
+                Number(freqInput.value) || 650,
+                ensureAudioContext()
+                .currentTime
+              );
+          } catch (e) {}
+        }
+      }
+    );
+    window.addEventListener(
+      "beforeunload",
+      () => {
+        stopPlaying();
+      }
+    );
+    document.addEventListener(
+      "visibilitychange",
+      () => {
+        if (
+          document.hidden &&
+          isPlaying &&
+          !isPaused
+        ) {
+          pausePlaying();
+        }
+      }
+    );
+
+    function setDefaultPattern() {
+      if (
+        patternArea.value.trim()
+      ) return;
+      patternArea.value =
+        textToPatterns(
+          textArea.value
+        );
+    }
+    setDefaultPattern();
+    textArea.addEventListener(
+      "input",
+      () => {
+        if (
+          !patternArea.value.trim()
+        ) {
+          patternArea.value =
+            textToPatterns(
+              textArea.value
+            );
+        }
+      }
+    );
+
+    function updateBandpass() {
+      if (!filterNode)
+        return;
+      const freq =
+        Number(freqInput.value) ||
+        650;
+      filterNode.frequency.value =
+        Math.max(
+          300,
+          freq
+        );
+      filterNode.Q.value = 6;
+    }
+    freqInput.addEventListener(
+      "change",
+      updateBandpass
+    );
+    volumeSlider.dispatchEvent(
+      new Event("input")
+    );
+    fontSlider.dispatchEvent(
+      new Event("input")
+    );
+
+    function resetResumeState() {
+      resumeState = {
+        mode: null,
+        index: 0
+      };
+    }
+    const originalStop =
+      stopPlaying;
+    stopPlaying = function() {
+      originalStop();
+      resetResumeState();
+      ledOff();
+      try {
+        if (
+          window._currentOscillator
+        ) {
+          window
+            ._currentOscillator
+            .disconnect();
+          window
+            ._currentOscillator = null;
+        }
+      } catch (e) {}
+    };
+
+    function buildCharacterMap(text) {
+      const map = [];
+      for (
+        let i = 0; i < text.length; i++
+      ) {
+        const ch = text[i];
+        if (ch === " ") {
+          map.push({
+            textIndex: i,
+            pattern: "/"
+          });
+          continue;
+        }
+        const pat =
+          MORSE[
+            ch.toUpperCase()
+          ];
+        if (!pat) continue;
+        map.push({
+          textIndex: i,
+          pattern: pat
+        });
+      }
+      return map;
+    }
+
+    function findTokenPosition(
+      text,
+      tokenIndex
+    ) {
+      let count = 0;
+      const re = /\S+/g;
+      let m;
+      while (
+        (m = re.exec(text)) !==
+        null
+      ) {
+        if (count === tokenIndex) {
+          return {
+            start: m.index,
+            end: m.index +
+              m[0].length
+          };
+        }
+        count++;
+      }
+      return null;
+    }
+
+    function findLineForPosition(
+      text,
+      pos
+    ) {
+      let line = 0;
+      for (
+        let i = 0; i < pos && i < text.length; i++
+      ) {
+        if (text[i] === "\n") {
+          line++;
+        }
+      }
+      return line;
+    }
+
+    function centerSelection(area) {
+      requestAnimationFrame(() => {
+        const start =
+          area.selectionStart;
+        const text =
+          area.value.substring(
+            0,
+            start
+          );
+        const style =
+          getComputedStyle(area);
+        const mirror =
+          document.createElement(
+            "div"
+          );
+        mirror.style.position =
+          "absolute";
+        mirror.style.visibility =
+          "hidden";
+        mirror.style.left =
+          "-99999px";
+        mirror.style.top =
+          "-99999px";
+        mirror.style.width =
+          area.clientWidth + "px";
+        mirror.style.fontFamily =
+          style.fontFamily;
+        mirror.style.fontSize =
+          style.fontSize;
+        mirror.style.lineHeight =
+          style.lineHeight;
+        mirror.style.padding =
+          style.padding;
+        mirror.style.whiteSpace =
+          "pre-wrap";
+        mirror.style.wordWrap =
+          "break-word";
+        mirror.textContent =
+          text;
+        document.body.appendChild(
+          mirror
+        );
+        const y =
+          mirror.offsetHeight;
+        mirror.remove();
+        area.scrollTo({
+          top: y -
+            area.clientHeight / 2,
+          behavior: "smooth"
+        });
+      });
+    }
+
+    function highlightChar(
+      area,
+      index
+    ) {
+      if (index < 0) return;
+      if (index >= area.value.length)
+        return;
+      area.focus();
+      area.setSelectionRange(
+        index,
+        index + 1
+      );
+      centerSelection(area);
+    }
+
+    function highlightToken(
+      area,
+      tokenIndex
+    ) {
+      const pos =
+        findTokenPosition(
+          area.value,
+          tokenIndex
+        );
+      if (!pos) return;
+      area.focus();
+      area.setSelectionRange(
+        pos.start,
+        pos.end
+      );
+      centerSelection(area);
+    }
+
+    function resumeFromCharacter(
+      text,
+      charIndex
+    ) {
+      if (charIndex < 0)
+        charIndex = 0;
+      resumeState = {
+        mode: "text",
+        index: charIndex
+      };
+      playText(
+        text, {
+          highlight: true
+        },
+        resumeState
+      );
+    }
+
+    function resumeFromToken(
+      tokens,
+      tokenIndex
+    ) {
+      if (tokenIndex < 0)
+        tokenIndex = 0;
+      resumeState = {
+        mode: "patterns",
+        index: tokenIndex
+      };
+      playPatterns(
+        tokens, {
+          highlight: true
+        },
+        resumeState
+      );
+    }
+
+    function selectCurrentTextCharacter(
+      index
+    ) {
+      if (
+        index <
+        textArea.value.length
+      ) {
+        highlightChar(
+          textArea,
+          index
+        );
+      }
+    }
+
+    function selectCurrentPatternToken(
+      index
+    ) {
+      highlightToken(
+        patternArea,
+        index
+      );
+    }
+
+    function smoothFollow(
+      area
+    ) {
+      clearTimeout(
+        area._followTimer
+      );
+      area._followTimer =
+        setTimeout(() => {
+          centerSelection(area);
+        }, 16);
+    }
+    textArea.addEventListener(
+      "select",
+      () => {
+        smoothFollow(
+          textArea
+        );
+      }
+    );
+    patternArea.addEventListener(
+      "select",
+      () => {
+        smoothFollow(
+          patternArea
+        );
+      }
+    );
+
+    function clearHighlighting() {
+      try {
+        textArea.setSelectionRange(
+          0,
+          0
+        );
+        patternArea.setSelectionRange(
+          0,
+          0
+        );
+      } catch (e) {}
+    }
+    const baseStopPlaying =
+      stopPlaying;
+    stopPlaying = function() {
+      baseStopPlaying();
+      clearHighlighting();
+      ledOff();
+      btnPlayPauseGlobal
+        .textContent = "Play";
+    };
+    document.addEventListener(
+      "keydown",
+      e => {
+        if (
+          e.code === "Space" &&
+          (
+            document.activeElement ===
+            document.body
+          )
+        ) {
+          e.preventDefault();
+          btnPlayPauseGlobal.click();
+        }
+      }
+    );
+    window.addEventListener(
+      "resize",
+      () => {
+        if (
+          document.activeElement ===
+          textArea
+        ) {
+          centerSelection(
+            textArea
+          );
+        }
+        if (
+          document.activeElement ===
+          patternArea
+        ) {
+          centerSelection(
+            patternArea
+          );
+        }
+      }
+    );
+
+    function saveState() {
+      try {
+        localStorage.setItem(
+          "morseStudioText",
+          textArea.value
+        );
+        localStorage.setItem(
+          "morseStudioPatterns",
+          patternArea.value
+        );
+        localStorage.setItem(
+          "morseStudioFont",
+          fontSlider.value
+        );
+        localStorage.setItem(
+          "morseStudioVolume",
+          volumeSlider.value
+        );
+        localStorage.setItem(
+          "morseStudioWpm",
+          wpmInput.value
+        );
+        localStorage.setItem(
+          "morseStudioFarnsworth",
+          farnsworthInput.value
+        );
+        localStorage.setItem(
+          "morseStudioFreq",
+          freqInput.value
+        );
+        localStorage.setItem(
+          "morseStudioLetterGap",
+          gapInput.value
+        );
+      } catch (e) {}
+    }
+
+    function loadState() {
+      try {
+        const savedText =
+          localStorage.getItem(
+            "morseStudioText"
+          );
+        const savedPatterns =
+          localStorage.getItem(
+            "morseStudioPatterns"
+          );
+        const savedFont =
+          localStorage.getItem(
+            "morseStudioFont"
+          );
+        const savedVolume =
+          localStorage.getItem(
+            "morseStudioVolume"
+          );
+        const savedWpm =
+          localStorage.getItem(
+            "morseStudioWpm"
+          );
+        const savedFarnsworth =
+          localStorage.getItem(
+            "morseStudioFarnsworth"
+          );
+        const savedFreq =
+          localStorage.getItem(
+            "morseStudioFreq"
+          );
+        const savedGap =
+          localStorage.getItem(
+            "morseStudioLetterGap"
+          );
+        if (savedText !== null)
+          textArea.value =
+          savedText;
+        if (savedPatterns !== null)
+          patternArea.value =
+          savedPatterns;
+        if (savedFont !== null)
+          fontSlider.value =
+          savedFont;
+        if (savedVolume !== null)
+          volumeSlider.value =
+          savedVolume;
+        if (savedWpm !== null)
+          wpmInput.value =
+          savedWpm;
+        if (savedFarnsworth !== null)
+          farnsworthInput.value =
+          savedFarnsworth;
+        if (savedFreq !== null)
+          freqInput.value =
+          savedFreq;
+        if (savedGap !== null)
+          gapInput.value =
+          savedGap;
+      } catch (e) {}
+    }
+    [
+      textArea,
+      patternArea,
+      volumeSlider,
+      fontSlider,
+      wpmInput,
+      farnsworthInput,
+      freqInput,
+      gapInput
+    ].forEach(control => {
+      control.addEventListener(
+        "input",
+        saveState
+      );
+    });
+    loadState();
+    fontSlider.dispatchEvent(
+      new Event("input")
+    );
+    volumeSlider.dispatchEvent(
+      new Event("input")
+    );
+    updateBandpass();
+    document.addEventListener(
+      "click",
+      async () => {
+        if (
+          window._audioUnlocked
+        ) return;
+        try {
+          const ctx =
+            ensureAudioContext();
+          if (
+            ctx.state ===
+            "suspended"
+          ) {
+            await ctx.resume();
+          }
+          window._audioUnlocked =
+            true;
+        } catch (e) {}
+      }, {
+        once: false
+      }
+    );
+    window.addEventListener(
+      "keydown",
+      async () => {
+        if (
+          window._audioUnlocked
+        ) return;
+        try {
+          const ctx =
+            ensureAudioContext();
+          if (
+            ctx.state ===
+            "suspended"
+          ) {
+            await ctx.resume();
+          }
+          window._audioUnlocked =
+            true;
+        } catch (e) {}
+      }
+    );
+    window.addEventListener(
+      "pagehide",
+      () => {
+        saveState();
+        stopPlaying();
+      }
+    );
+    window.addEventListener(
+      "beforeunload",
+      () => {
+        saveState();
+        stopPlaying();
+      }
+    );
+    if (
+      !patternArea.value.trim() &&
+      textArea.value.trim()
+    ) {
+      patternArea.value =
+        textToPatterns(
+          textArea.value
+        );
+    }
+    btnPlayPauseGlobal.textContent =
+      "Play";
+    ledOff();
+    console.log(
+      "Morse Studio Ready"
+    );
+  </script>
+</body>
+
+</html>
